@@ -27,7 +27,7 @@ async function sendTelegramMessage(message) {
 
 module.exports = async (req, res) => {
     // Set CORS headers directly in each handler
-    res.setHeader('Access-Control-Allow-Origin', 'https://www.marynastrategy.com');
+    res.setHeader('Access-Control-Allow-Origin', ['https://www.marynastrategy.com', 'https://marynastrategy.com']);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
@@ -61,14 +61,14 @@ module.exports = async (req, res) => {
 
             // Формирование сообщения для отправки в Telegram
             let telegramMessage = `<b>Нове повідомлення!</b>\n\n\n`;
-            
+
             // Add kind/page source if present
             if (kind) {
                 telegramMessage += `<b>Source сторінка:</b> ${kind}\n`;
             }
-            
+
             telegramMessage += `<b>Імʼя:</b> ${name}\n`;
-            
+
             // Make phone number clickable
             telegramMessage += `<b>Телефон:</b> <a href="tel:${tel}">${tel}</a>\n`;
 
