@@ -1,0 +1,22 @@
+{
+  "name": "order-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot service for order notifications",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "main": "api/index.js",
+  "scripts": {
+    "deploy": "vercel --prod",
+    "dev": "node -e \"const handler = require('./api/index.js'); const http = require('http'); const url = require('url'); const server = http.createServer((req, res) => { let body = ''; req.on('data', chunk => body += chunk); req.on('end', () => { try { req.body = body ? JSON.parse(body) : {}; } catch(e) { req.body = {}; } handler(req, res); }); }); server.listen(3000, () => console.log('Server running on http://localhost:3000'));\""
+
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "express": "^4.18.2"
+  }
+}
