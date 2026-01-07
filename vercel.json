@@ -1,38 +1,42 @@
 {
-    "version": 2,
-    "builds": [
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node@latest"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
         {
-            "src": "api/**/*.js",
-            "use": "@vercel/node@latest"
-        }
-    ],
-    "headers": [
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://www.marynastrategy.com, https://www.другийдомен.com"
+        },
         {
-            "source": "/api/(.*)",
-            "headers": [
-                {
-                    "key": "Access-Control-Allow-Origin",
-                    "value": "https://www.marynastrategy.com"
-                }, 
-                {
-                    "key": "Access-Control-Allow-Methods",
-                    "value": "GET, POST, PUT, DELETE, OPTIONS"
-                },
-                {
-                    "key": "Access-Control-Allow-Headers",
-                    "value": "X-Requested-With, Content-Type, Authorization"
-                },
-                {
-                    "key": "Access-Control-Max-Age",
-                    "value": "86400"
-                }
-            ]
-        }
-    ],
-    "rewrites": [
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
         {
-            "source": "/api/:path*",
-            "destination": "/api/:path*"
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        },
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
         }
-    ]
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
 }

@@ -48,8 +48,8 @@ module.exports = async (req, res) => {
 
     if (req.method === 'POST') {
         try {
-            // Get data from request
-            const { name, tel, telegram, instagram, message, kind } = req.body;
+
+            const { name, tel, telegram, instagram, message, kind, request, stage } = req.body;
 
             // Проверка обязательных полей
             if (!name || !tel) {
@@ -83,10 +83,15 @@ module.exports = async (req, res) => {
                 const instagramUsername = instagram.replace('@', '');
                 telegramMessage += `<b>Instagram:</b> <a href="https://instagram.com/${instagramUsername}">@${instagramUsername}</a>\n`;
             }
+            if (request) {
+                telegramMessage += `<b>Запит:</b> ${request}\n`;
+            }
+            if (stage) {
+                telegramMessage += `<b>Етап:</b> ${stage}\n`;
+            }
             if (message) {
                 telegramMessage += `<b>Повідомлення:</b> ${message}\n`;
             }
-
             // Add timestamp
             telegramMessage += `\n<b>Час:</b> ${new Date().toLocaleString('uk-UA')}`;
 
