@@ -28,10 +28,11 @@ async function sendTelegramMessage(message) {
 module.exports = async (req, res) => {
     // Set CORS headers directly in each handler
     res.setHeader('Access-Control-Allow-Origin', 'https://www.marynastrategy.com');
+    res.setHeader('Access-Control-Allow-Origin', 'https://marina-form.vercel.app');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
-
+    console.log('start')
     // Handle preflight OPTIONS request
     if (req.method === 'OPTIONS') {
         return res.status(204).end();
