@@ -12,7 +12,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://www.marynastrategy.com, https://www.другийдомен.com"
+          "value": "https://www.marynastrategy.com, https://marina-form.vercel.app/"
         },
         {
           "key": "Access-Control-Allow-Methods",
