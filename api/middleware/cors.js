@@ -1,8 +1,8 @@
 // api/middleware/cors.js
 module.exports = (req, res, next) => {
   const allowedOrigins = [
-    'https://www.marynastrategy.com',
-    'https://marina-form.vercel.app' // Додайте свій другий домен
+    'https://strategymaryna.com',
+    'https://form.strategymaryna.com/' // Додайте свій другий домен
   ];
   
   const origin = req.headers.origin;
