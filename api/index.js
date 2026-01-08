@@ -26,14 +26,21 @@ async function sendTelegramMessage(message) {
 }
 
 module.exports = async (req, res) => {
-    // Set CORS headers directly in each handler
-    res.setHeader('Access-Control-Allow-Origin', 'https://strategymaryna.com');
-    res.setHeader('Access-Control-Allow-Origin', 'https://form.strategymaryna.com');
+    const allowedOrigins = [
+        'https://strategymaryna.com',
+        'https://form.strategymaryna.com'
+    ];
+
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
-    console.log('start')
-    // Handle preflight OPTIONS request
+    res.setHeader('Access-Control-Max-Age', '86400');
+
     if (req.method === 'OPTIONS') {
         return res.status(204).end();
     }
