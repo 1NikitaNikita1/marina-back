@@ -28,7 +28,8 @@ async function sendTelegramMessage(message) {
 module.exports = async (req, res) => {
     const allowedOrigins = [
         'https://strategymaryna.com',
-        'https://form.strategymaryna.com'
+        'https://form.strategymaryna.com',
+        'https://training.strategymaryna.com'
     ];
 
     const origin = req.headers.origin;
