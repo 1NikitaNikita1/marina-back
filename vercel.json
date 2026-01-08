@@ -12,7 +12,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://strategymaryna.com, https://form.strategymaryna.com, https://training.strategymaryna.com"
+          "value": "https://strategymaryna.com, https://form.strategymaryna.com, https://training.strategymaryna.com, https://study.strategymaryna.com"
         },
         {
           "key": "Access-Control-Allow-Methods",

@@ -3,7 +3,8 @@ module.exports = (req, res, next) => {
   const allowedOrigins = [
     'https://strategymaryna.com',
     'https://form.strategymaryna.com',
-    'https://training.strategymaryna.com/' // Додайте свій другий домен
+    'https://training.strategymaryna.com',
+    'https://study.strategymaryna.com' // Додайте свій другий домен
   ];
   
   const origin = req.headers.origin;
