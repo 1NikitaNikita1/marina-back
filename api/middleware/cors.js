@@ -2,6 +2,7 @@
 module.exports = (req, res, next) => {
   const allowedOrigins = [
     'https://strategymaryna.com',
+    'https://www.strategymaryna.com',
     'https://form.strategymaryna.com',
     'https://training.strategymaryna.com',
     'https://study.strategymaryna.com' // Додайте свій другий домен
