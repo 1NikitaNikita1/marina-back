@@ -29,7 +29,7 @@ module.exports = async (req, res) => {
     const allowedOrigins = [
         'https://strategymaryna.com',
         'https://www.strategymaryna.com',
-        'https://form.strategymaryna.com', 
+        'https://form.strategymaryna.com',
         'https://training.strategymaryna.com',
         'https://study.strategymaryna.com'
     ];
@@ -60,7 +60,7 @@ module.exports = async (req, res) => {
     if (req.method === 'POST') {
         try {
 
-            const { name, tel, telegram, instagram, message, kind, request, stage } = req.body;
+            const { name, tel, telegram, instagram, message, kind, request, stage, amount } = req.body;
 
             // Проверка обязательных полей
             if (!name || !tel) {
@@ -100,6 +100,11 @@ module.exports = async (req, res) => {
             if (stage) {
                 telegramMessage += `<b>Етап:</b> ${stage}\n`;
             }
+
+            if (amount) {
+                telegramMessage += `<b>Середній місячний дохід:</b> ${amount}\n`;
+            }
+
             if (message) {
                 telegramMessage += `<b>Повідомлення:</b> ${message}\n`;
             }
