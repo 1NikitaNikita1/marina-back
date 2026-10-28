@@ -417,7 +417,7 @@ async function saveToGoogleSheets(data) {
 
     await sheets.spreadsheets.values.update({
         spreadsheetId: GOOGLE_SHEET_ID,
-        range: `'${sheetTitle}'!A${nextRow}:J${nextRow}`,
+        range: `'${sheetTitle}'!A${nextRow}:O${nextRow}`,
         valueInputOption: 'RAW',
         requestBody: {
             values: [[
