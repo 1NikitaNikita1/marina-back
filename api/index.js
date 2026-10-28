@@ -100,10 +100,23 @@ function escapeHtml(value) {
         "'": '&#39;'
     })[character]);
 }
+const STATUS_COL = 15; // P
+const TOTAL_COLS = 16; // A–P
+
+const HEADER_YELLOW = { red: 1, green: 0.95, blue: 0.78 };
+const HEADER_GREEN = { red: 0.82, green: 0.9, blue: 0.8 };
+
+const headerFormat = (color) => ({
+    backgroundColor: color,
+    textFormat: { bold: true, fontSize: 12 },
+    horizontalAlignment: 'CENTER',
+    verticalAlignment: 'MIDDLE',
+    wrapStrategy: 'WRAP'
+});
 
 async function copyStatusValidation(sheetId, allSheets) {
     const template = allSheets.find(
-        item => item.properties.sheetId !== sheetId
+        (item) => item.properties.sheetId !== sheetId
     );
 
     if (!template) return;
@@ -118,15 +131,15 @@ async function copyStatusValidation(sheetId, allSheets) {
                             sheetId: template.properties.sheetId,
                             startRowIndex: 1,
                             endRowIndex: 1000,
-                            startColumnIndex: 10,
-                            endColumnIndex: 11
+                            startColumnIndex: STATUS_COL,
+                            endColumnIndex: STATUS_COL + 1
                         },
                         destination: {
                             sheetId,
                             startRowIndex: 1,
                             endRowIndex: 1000,
-                            startColumnIndex: 10,
-                            endColumnIndex: 11
+                            startColumnIndex: STATUS_COL,
+                            endColumnIndex: STATUS_COL + 1
                         },
                         pasteType: 'PASTE_DATA_VALIDATION',
                         pasteOrientation: 'NORMAL'
@@ -138,71 +151,68 @@ async function copyStatusValidation(sheetId, allSheets) {
 }
 
 async function ensureStatusColumn(sheetId, allSheets, sheetTitle) {
-    const sheet = allSheets.find(
-        item => item.properties.sheetId === sheetId
-    );
-
+    const sheet = allSheets.find((item) => item.properties.sheetId === sheetId);
     const columnCount = sheet?.properties?.gridProperties?.columnCount || 0;
 
-    const requests = [];
-
-    if (columnCount < 11) {
-        requests.push({
-            updateSheetProperties: {
-                properties: {
-                    sheetId,
-                    gridProperties: {
-                        columnCount: 11
+    // 1. Гарантуємо, що в аркуші є колонка P
+    if (columnCount < TOTAL_COLS) {
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: GOOGLE_SHEET_ID,
+            requestBody: {
+                requests: [
+                    {
+                        updateSheetProperties: {
+                            properties: {
+                                sheetId,
+                                gridProperties: { columnCount: TOTAL_COLS }
+                            },
+                            fields: 'gridProperties.columnCount'
+                        }
                     }
-                },
-                fields: 'gridProperties.columnCount'
+                ]
             }
         });
     }
 
-    requests.push({
-        repeatCell: {
-            range: {
-                sheetId,
-                startRowIndex: 0,
-                endRowIndex: 1,
-                startColumnIndex: 10,
-                endColumnIndex: 11
-            },
-            cell: {
-                userEnteredFormat: {
-                    backgroundColor: {
-                        red: 0.82,
-                        green: 0.9,
-                        blue: 0.8
-                    },
-                    textFormat: {
-                        bold: true,
-                        fontSize: 12
-                    },
-                    horizontalAlignment: 'CENTER',
-                    verticalAlignment: 'MIDDLE',
-                    wrapStrategy: 'WRAP'
-                }
-            },
-            fields: 'userEnteredFormat'
-        }
-    });
-
-    await sheets.spreadsheets.values.update({
+    // 2. Якщо P1 вже заповнена, нічого не чіпаємо
+    const header = await sheets.spreadsheets.values.get({
         spreadsheetId: GOOGLE_SHEET_ID,
-        range: `'${sheetTitle}'!K1`,
-        valueInputOption: 'RAW',
-        requestBody: {
-            values: [['Статус']]
-        }
+        range: `'${sheetTitle}'!P1`
     });
 
+    if (header.data.values?.[0]?.[0]) return;
+
+    // 3. Формат заголовка P1
     await sheets.spreadsheets.batchUpdate({
         spreadsheetId: GOOGLE_SHEET_ID,
-        requestBody: { requests }
+        requestBody: {
+            requests: [
+                {
+                    repeatCell: {
+                        range: {
+                            sheetId,
+                            startRowIndex: 0,
+                            endRowIndex: 1,
+                            startColumnIndex: STATUS_COL,
+                            endColumnIndex: STATUS_COL + 1
+                        },
+                        cell: { userEnteredFormat: headerFormat(HEADER_GREEN) },
+                        fields: 'userEnteredFormat'
+                    }
+                }
+            ]
+        }
     });
 
+    // 4. Текст заголовка
+    await sheets.spreadsheets.values.update({
+        spreadsheetId: GOOGLE_SHEET_ID,
+        range: `'${sheetTitle}'!P1`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [['Статус']] }
+    });
+
+    // 5. Випадний список
     await copyStatusValidation(sheetId, allSheets);
 }
 
@@ -212,7 +222,7 @@ async function getOrCreateMonthlySheet(sheetTitle) {
     });
 
     const existingSheet = spreadsheet.data.sheets.find(
-        sheet => sheet.properties.title === sheetTitle
+        (sheet) => sheet.properties.title === sheetTitle
     );
 
     if (existingSheet) {
@@ -236,7 +246,7 @@ async function getOrCreateMonthlySheet(sheetTitle) {
                             gridProperties: {
                                 frozenRowCount: 1,
                                 rowCount: 1000,
-                                columnCount: 11
+                                columnCount: TOTAL_COLS
                             }
                         }
                     }
@@ -249,67 +259,44 @@ async function getOrCreateMonthlySheet(sheetTitle) {
 
     await sheets.spreadsheets.values.update({
         spreadsheetId: GOOGLE_SHEET_ID,
-        range: `'${sheetTitle}'!A1:K1`,
+        range: `'${sheetTitle}'!A1:P1`,
         valueInputOption: 'RAW',
-        requestBody: {
-            values: [SHEET_HEADERS]
-        }
+        requestBody: { values: [SHEET_HEADERS] }
     });
+
+    const getColumnWidth = (index) => {
+        if (index === 7 || index === 8) return 180;
+        if (index === 9) return 220;
+        if (index === STATUS_COL) return 180;
+        return 150;
+    };
 
     const requests = [
         {
+            // A–O: жовтий
             repeatCell: {
                 range: {
                     sheetId: newSheet.sheetId,
                     startRowIndex: 0,
                     endRowIndex: 1,
                     startColumnIndex: 0,
-                    endColumnIndex: 10
+                    endColumnIndex: STATUS_COL
                 },
-                cell: {
-                    userEnteredFormat: {
-                        backgroundColor: {
-                            red: 1,
-                            green: 0.95,
-                            blue: 0.78
-                        },
-                        textFormat: {
-                            bold: true,
-                            fontSize: 12
-                        },
-                        horizontalAlignment: 'CENTER',
-                        verticalAlignment: 'MIDDLE',
-                        wrapStrategy: 'WRAP'
-                    }
-                },
+                cell: { userEnteredFormat: headerFormat(HEADER_YELLOW) },
                 fields: 'userEnteredFormat'
             }
         },
         {
+            // P: зелений
             repeatCell: {
                 range: {
                     sheetId: newSheet.sheetId,
                     startRowIndex: 0,
                     endRowIndex: 1,
-                    startColumnIndex: 10,
-                    endColumnIndex: 11
+                    startColumnIndex: STATUS_COL,
+                    endColumnIndex: STATUS_COL + 1
                 },
-                cell: {
-                    userEnteredFormat: {
-                        backgroundColor: {
-                            red: 0.82,
-                            green: 0.9,
-                            blue: 0.8
-                        },
-                        textFormat: {
-                            bold: true,
-                            fontSize: 12
-                        },
-                        horizontalAlignment: 'CENTER',
-                        verticalAlignment: 'MIDDLE',
-                        wrapStrategy: 'WRAP'
-                    }
-                },
+                cell: { userEnteredFormat: headerFormat(HEADER_GREEN) },
                 fields: 'userEnteredFormat'
             }
         },
@@ -321,13 +308,11 @@ async function getOrCreateMonthlySheet(sheetTitle) {
                     startIndex: 0,
                     endIndex: 1
                 },
-                properties: {
-                    pixelSize: 58
-                },
+                properties: { pixelSize: 58 },
                 fields: 'pixelSize'
             }
         },
-        ...Array.from({ length: 11 }, (_, index) => ({
+        ...Array.from({ length: TOTAL_COLS }, (_, index) => ({
             updateDimensionProperties: {
                 range: {
                     sheetId: newSheet.sheetId,
@@ -335,16 +320,7 @@ async function getOrCreateMonthlySheet(sheetTitle) {
                     startIndex: index,
                     endIndex: index + 1
                 },
-                properties: {
-                    pixelSize:
-                        index === 7 || index === 8
-                            ? 180
-                            : index === 9
-                                ? 220
-                                : index === 10
-                                    ? 180
-                                    : 150
-                },
+                properties: { pixelSize: getColumnWidth(index) },
                 fields: 'pixelSize'
             }
         }))
@@ -355,10 +331,7 @@ async function getOrCreateMonthlySheet(sheetTitle) {
         requestBody: { requests }
     });
 
-    await copyStatusValidation(
-        newSheet.sheetId,
-        spreadsheet.data.sheets
-    );
+    await copyStatusValidation(newSheet.sheetId, spreadsheet.data.sheets);
 
     return newSheet;
 }
@@ -385,13 +358,10 @@ async function saveToGoogleSheets(data) {
         range: `'${sheetTitle}'!A:A`
     });
 
-    const nextRow = Math.max(
-        2,
-        (columnValues.data.values || []).length + 1
-    );
-
+    const nextRow = Math.max(2, (columnValues.data.values || []).length + 1);
     const sheetId = monthlySheet.sheetId;
 
+    // Очищаємо формат A–O (P зі статусом не чіпаємо)
     await sheets.spreadsheets.batchUpdate({
         spreadsheetId: GOOGLE_SHEET_ID,
         requestBody: {
@@ -403,11 +373,9 @@ async function saveToGoogleSheets(data) {
                             startRowIndex: nextRow - 1,
                             endRowIndex: nextRow,
                             startColumnIndex: 0,
-                            endColumnIndex: 10
+                            endColumnIndex: STATUS_COL
                         },
-                        cell: {
-                            userEnteredFormat: {}
-                        },
+                        cell: { userEnteredFormat: {} },
                         fields: 'userEnteredFormat'
                     }
                 }
@@ -420,23 +388,25 @@ async function saveToGoogleSheets(data) {
         range: `'${sheetTitle}'!A${nextRow}:O${nextRow}`,
         valueInputOption: 'RAW',
         requestBody: {
-            values: [[
-                data.kind || '',
-                data.name || '',
-                data.tel || '',
-                data.telegram || '',
-                data.instagram || '',
-                data.request || '',
-                data.stage || '',
-                data.amount || '',
-                data.message || '',
-                timestamp,
-                data.utm?.source || '',
-                data.utm?.medium || '',
-                data.utm?.campaign || '',
-                data.utm?.term || '',
-                data.utm?.content || '',
-            ]]
+            values: [
+                [
+                    data.kind || '',
+                    data.name || '',
+                    data.tel || '',
+                    data.telegram || '',
+                    data.instagram || '',
+                    data.request || '',
+                    data.stage || '',
+                    data.amount || '',
+                    data.message || '',
+                    timestamp,
+                    data.utm?.source || '',
+                    data.utm?.medium || '',
+                    data.utm?.campaign || '',
+                    data.utm?.term || '',
+                    data.utm?.content || ''
+                ]
+            ]
         }
     });
 }
