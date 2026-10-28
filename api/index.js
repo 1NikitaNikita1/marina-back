@@ -430,7 +430,11 @@ async function saveToGoogleSheets(data) {
                 data.stage || '',
                 data.amount || '',
                 data.message || '',
-                timestamp
+                timestamp,
+                data.utm?.source || '',
+                data.utm?.medium || '',
+                data.utm?.campaign || '',
+                data.utm?.term || '',
             ]]
         }
     });
@@ -483,7 +487,8 @@ module.exports = async (req, res) => {
             kind,
             request,
             stage,
-            amount
+            amount,
+            utm
         } = req.body || {};
 
         if (!name || !tel) {
@@ -541,6 +546,31 @@ module.exports = async (req, res) => {
             timeZone: 'Europe/Kyiv'
         });
 
+        if (utm) {
+            telegramMessage +=
+                `\n\n<b>UTM</b>\n`;
+
+            if (utm.source) {
+                telegramMessage +=
+                    `<b>Source:</b> ${escapeHtml(utm.source)}\n`;
+            }
+
+            if (utm.medium) {
+                telegramMessage +=
+                    `<b>Medium:</b> ${escapeHtml(utm.medium)}\n`;
+            }
+
+            if (utm.campaign) {
+                telegramMessage +=
+                    `<b>Campaign:</b> ${escapeHtml(utm.campaign)}\n`;
+            }
+
+            if (utm.term) {
+                telegramMessage +=
+                    `<b>Term:</b> ${escapeHtml(utm.term)}\n`;
+            }
+        }
+
         telegramMessage += `\n<b>Час:</b> ${timestamp}`;
 
         const data = {
@@ -553,7 +583,8 @@ module.exports = async (req, res) => {
             request,
             stage,
             amount,
-            timestamp
+            timestamp,
+            utm
         };
 
         const results = await Promise.allSettled([
