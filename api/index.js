@@ -435,6 +435,7 @@ async function saveToGoogleSheets(data) {
                 data.utm?.medium || '',
                 data.utm?.campaign || '',
                 data.utm?.term || '',
+                data.utm?.content || '',
             ]]
         }
     });
@@ -568,6 +569,11 @@ module.exports = async (req, res) => {
             if (utm.term) {
                 telegramMessage +=
                     `<b>Term:</b> ${escapeHtml(utm.term)}\n`;
+            }
+
+            if (utm.content) {
+                telegramMessage +=
+                    `<b>Content:</b> ${escapeHtml(utm.content)}\n`;
             }
         }
 
